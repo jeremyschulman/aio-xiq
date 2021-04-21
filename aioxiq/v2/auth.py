@@ -1,4 +1,4 @@
-from typing import Optional, List, Set, Sequence
+from typing import Optional, Set, Sequence
 
 from .client import XiqBaseClient
 
@@ -16,8 +16,10 @@ class XiqAuth(XiqBaseClient):
         self.auth_known_permissions_read_only: Optional[Set] = None
 
     async def auth_new_token(
-        self, permissions: Sequence[str],
-        description: str, expiry_epoch: Optional[int] = None
+        self,
+        permissions: Sequence[str],
+        description: str,
+        expiry_epoch: Optional[int] = None,
     ) -> dict:
         """
         Create a new API token.
@@ -58,16 +60,16 @@ class XiqAuth(XiqBaseClient):
 
         not_perms = [p for p in permissions if p not in self.auth_known_permissions]
         if not_perms:
-            raise ValueError(
-                f"Invalid permissions requested: {not_perms}",
-                not_perms
-            )
+            raise ValueError(f"Invalid permissions requested: {not_perms}", not_perms)
 
-        res = await self.post('/auth/apitoken', json=dict(
-            description=description or '',
-            expire_time=expiry_epoch,
-            permissions=permissions
-        ))
+        res = await self.post(
+            "/auth/apitoken",
+            json=dict(
+                description=description or "",
+                expire_time=expiry_epoch,
+                permissions=permissions,
+            ),
+        )
 
         res.raise_for_status()
         return res.json()
@@ -86,7 +88,7 @@ class XiqAuth(XiqBaseClient):
         -------
         dict of data, per the API schema.
         """
-        res = await self.get('/auth/apitoken/info')
+        res = await self.get("/auth/apitoken/info")
         res.raise_for_status()
         return res.json()
 
@@ -101,12 +103,13 @@ class XiqAuth(XiqBaseClient):
         -------
         list[str]
         """
-        res = await self.get('/auth/permissions')
+        res = await self.get("/auth/permissions")
         res.raise_for_status()
         body = res.json()
-        self.auth_known_permissions = {p['name'] for p in body}
+        self.auth_known_permissions = {p["name"] for p in body}
         self.auth_known_permissions_read_only = {
-            p for p in self.auth_known_permissions
-            if p.endswith((':r', ':list', ':view'))
+            p
+            for p in self.auth_known_permissions
+            if p.endswith((":r", ":list", ":view"))
         }
         return body
