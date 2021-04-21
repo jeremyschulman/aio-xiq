@@ -1,10 +1,46 @@
-from typing import Optional
+# -----------------------------------------------------------------------------
+# System Imports
+# -----------------------------------------------------------------------------
+
+from typing import Optional, List, Dict
+import asyncio
 import os
+
+# -----------------------------------------------------------------------------
+# Public Imports
+# -----------------------------------------------------------------------------
+
 from httpx import AsyncClient
+
+# -----------------------------------------------------------------------------
+# Exports
+# -----------------------------------------------------------------------------
+
+__all__ = ["XiqBaseClient"]
+
+
+# -----------------------------------------------------------------------------
+#
+#                                 CODE BEGINS
+#
+# -----------------------------------------------------------------------------
 
 
 class XiqBaseClient(AsyncClient):
+    """
+    Base client class for Extreme Cloud IQ API access.  The following
+    environment variables can be used:
+
+       * XIQ_USER - login user name
+       * XIQ_PASSWORD - login user password
+       * XIQ_TOKEN - login token; no need for user/password
+
+    If the Caller does not provide an API token, then the Caller must invoke
+    the `login` coroutine to obtain an API token.
+    """
+
     DEFAULT_URL = "https://api.extremecloudiq.com"
+    DEFAULT_PAGE_SZ = 100
     DEFAULT_TIMEOUT = 10
 
     def __init__(
@@ -28,6 +64,19 @@ class XiqBaseClient(AsyncClient):
     async def login(
         self, username: Optional[str] = None, password: Optional[str] = None
     ):
+        """
+        This coroutine is used to authenticate with the Extreme Cloud IQ system
+        and obtain an API token for use.
+
+        Parameters
+        ----------
+        username: str - login user name
+        password: str - login user passowrd
+
+        Raises
+        ------
+        HTTPException upon authentication error.
+        """
         creds = {
             "username": username or self.xiq_user,
             "password": password or self.xiq_password,
@@ -36,3 +85,52 @@ class XiqBaseClient(AsyncClient):
         res.raise_for_status()
         self.xiq_token = res.json()["access_token"]
         self.headers["Authorization"] = "Bearer " + self.xiq_token
+
+    async def paginate(
+        self, url: str, page_sz: Optional[int] = None, **params
+    ) -> List[Dict]:
+        """
+        Concurrently paginate GET on url for the given page_sz and optional
+        parameters.
+
+        Parameters
+        ----------
+        url: str - The API URL endpoint
+        page_sz: - Max number of result items per page
+
+        Returns
+        -------
+        List of all API results from all pages
+        """
+
+        # always make a copy of the Caller provided parameters so we
+        # do not trample any of their settings.
+
+        _params = params.copy()
+
+        # fetch the first page of data, which will also tell us the the total
+        # number of pages we need to fetch.
+
+        _params["limit"] = page_sz or self.DEFAULT_PAGE_SZ
+        res = await self.get(url, params=_params)
+        res.raise_for_status()
+        body = res.json()
+        records = body["data"]
+        total_pages = body["total_pages"]
+
+        # fetch the remaining pages concurrently; remember that the `range`
+        # function does not include the ending value ... so +1 the total_pages.
+
+        tasks = list()
+        for page in range(2, total_pages + 1):
+            _params["page"] = page
+            tasks.append(self.get(url, params=_params.copy()))
+
+        for next_r in asyncio.as_completed(tasks):
+            res = await next_r
+            body = res.json()
+            records.extend(body["data"])
+
+        # return the full list of all records.
+
+        return records

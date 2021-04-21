@@ -67,7 +67,7 @@ class XiqAuth(XiqBaseClient):
             json=dict(
                 description=description or "",
                 expire_time=expiry_epoch,
-                permissions=permissions,
+                permissions=list(permissions),
             ),
         )
 
