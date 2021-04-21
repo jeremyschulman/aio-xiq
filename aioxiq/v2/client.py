@@ -91,7 +91,8 @@ class XiqBaseClient(AsyncClient):
     ) -> List[Dict]:
         """
         Concurrently paginate GET on url for the given page_sz and optional
-        parameters.
+        parameters.  If page_sz is not provided then the DEFAULT_PAGE_SZ class
+        attribute value is used.
 
         Parameters
         ----------
