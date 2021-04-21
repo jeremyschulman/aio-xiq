@@ -1,4 +1,4 @@
-# Extreme Cloud IQ - Pythone3 AsyncIO Client
+# Extreme Cloud IQ - Python3 AsyncIO Client
 
 This repository contains a Python3 asyncio based client library for interacting
 with the Extreme Cloud IQ system (XIQ).  The XIQ system supports a `v1` and `v2` client.  The `v2` API
