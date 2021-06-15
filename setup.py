@@ -5,7 +5,7 @@ packages = ["aioxiq", "aioxiq.v1", "aioxiq.v2"]
 
 package_data = {"": ["*"]}
 
-install_requires = ["httpx>=0.17.1,<0.18.0", "tenacity>=7.0.0,<8.0.0"]
+install_requires = ["httpx", "tenacity>=7.0.0,<8.0.0"]
 
 setup_kwargs = {
     "name": "aio-xiq",
