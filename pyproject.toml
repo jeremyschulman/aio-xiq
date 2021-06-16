@@ -14,14 +14,16 @@ packages = [
    {include = "aioxiq"}
 ]
 license = "Apache-2.0"
-version = "0.1.0"
+readme = "README.md"
+version = "0.2.0"
 description = "AsyncIO client for Extreme Cloud IQ"
 authors = ["Jeremy Schulman <jeremy.schulman@mlb.com>"]
+repository = "https://github.com/jeremyschulman/aio-xiq"
 
 
 [tool.poetry.dependencies]
 python = "^3.8"
-httpx = "^0.17.1"
+httpx = "^0.18.1"
 tenacity = "^7.0.0"
 
 [tool.poetry.dev-dependencies]
