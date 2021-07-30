@@ -15,7 +15,7 @@ packages = [
 ]
 license = "Apache-2.0"
 readme = "README.md"
-version = "0.2.0"
+version = "0.3.0"
 description = "AsyncIO client for Extreme Cloud IQ"
 authors = ["Jeremy Schulman <jeremy.schulman@mlb.com>"]
 repository = "https://github.com/jeremyschulman/aio-xiq"
