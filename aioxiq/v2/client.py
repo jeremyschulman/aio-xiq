@@ -10,7 +10,8 @@ import os
 # Public Imports
 # -----------------------------------------------------------------------------
 
-from httpx import AsyncClient
+from httpx import AsyncClient, Response
+from tenacity import retry, wait_exponential
 
 # -----------------------------------------------------------------------------
 # Exports
@@ -135,3 +136,18 @@ class XiqBaseClient(AsyncClient):
         # return the full list of all records.
 
         return records
+
+    # -----------------------------------------------------------------------------
+    #                            AsyncClient Overrides
+    # -----------------------------------------------------------------------------
+
+    async def request(self, *vargs, **kwargs) -> Response:
+        @retry(wait=wait_exponential(multiplier=1, min=4, max=10))
+        async def _do_rqst():
+            res = await super(XiqBaseClient, self).request(*vargs, **kwargs)
+            if res.status_code == 400 and 'UNKNOWN' in res.text:
+                print("XIQ client request: retry")
+                res.raise_for_status()
+            return res
+
+        return await _do_rqst()
