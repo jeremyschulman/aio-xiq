@@ -5,6 +5,7 @@
 from typing import Optional, List, Dict
 import asyncio
 import os
+from http import HTTPStatus
 
 # -----------------------------------------------------------------------------
 # Public Imports
@@ -145,9 +146,18 @@ class XiqBaseClient(AsyncClient):
         @retry(wait=wait_exponential(multiplier=1, min=4, max=10))
         async def _do_rqst():
             res = await super(XiqBaseClient, self).request(*vargs, **kwargs)
-            if res.status_code == 400 and 'UNKNOWN' in res.text:
-                print("XIQ client request: retry")
+
+            if res.status_code == HTTPStatus.BAD_REQUEST and "UNKNOWN" in res.text:
+                print("XIQ client bad request: retry")
                 res.raise_for_status()
+
+            # sometimes the XIQ system is unavailable; so retry before bailing
+            # out completely.
+
+            if res.status_code == HTTPStatus.SERVICE_UNAVAILABLE:
+                print("XIQ service unavailable: retry")
+                res.raise_for_status()
+
             return res
 
         return await _do_rqst()
