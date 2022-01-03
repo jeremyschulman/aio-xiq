@@ -30,6 +30,7 @@ class XiqLocations(XiqBaseClient):
     """
 
     def __init__(self, *vargs, **kwargs):
+        """Initialize locations mixin"""
         super().__init__(*vargs, **kwargs)
         self._locations_tree = dict()
         self._locations_parents = dict()

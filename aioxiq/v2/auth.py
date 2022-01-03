@@ -4,7 +4,24 @@ from .client import XiqBaseClient
 
 
 class XiqAuth(XiqBaseClient):
+    """
+    This XIQ client mixin provides the authentication related API endpoint
+    support.
+
+    Attributes
+    ----------
+    auth_knonw_permissions: set[str]
+        All known authorization permissions available for the API login (per the
+        token)
+
+    auth_known_permissions_read_only: set[str]
+        All known read-only authorization permissions availble for the API login
+    """
+
     def __init__(self, *vargs, **kwargs):
+        """
+        Initialize the authentication mixin.
+        """
         super(XiqAuth, self).__init__(*vargs, **kwargs)
 
         # The list of known permissions, as retrieved from calling
@@ -22,7 +39,7 @@ class XiqAuth(XiqBaseClient):
         expiry_epoch: Optional[int] = None,
     ) -> dict:
         """
-        Create a new API token.
+        Create a new API token given the set of requested permissions.
 
         Parameters
         ----------
@@ -36,7 +53,7 @@ class XiqAuth(XiqBaseClient):
             default to empty-string.
 
         expiry_epoch: epoch
-            Time in Unix epoch.  If null (default) then the token does no
+            Time in Unix epoch.  If null (default) then the token does not
             expire.
 
         Returns
