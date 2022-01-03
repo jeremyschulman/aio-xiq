@@ -3,6 +3,7 @@ from aioxiq import XiqClient
 from aioxiq.v2.locations import XiqLocations
 
 api = XiqLocations()
+
 tree_data = json.load(open("../location-tree.json"))
 
 locations = dict()

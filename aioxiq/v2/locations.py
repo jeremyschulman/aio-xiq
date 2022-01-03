@@ -30,6 +30,7 @@ class XiqLocations(XiqBaseClient):
     """
 
     def __init__(self, *vargs, **kwargs):
+        """Initialize locations mixin"""
         super().__init__(*vargs, **kwargs)
         self._locations_tree = dict()
         self._locations_parents = dict()
@@ -37,7 +38,7 @@ class XiqLocations(XiqBaseClient):
 
     async def build_locations_tree(self):
         """
-        This coroutine is used to fetch the entire locations tree data
+        This coroutine is used to fetch the entire location tree data
         structure and form the relationships between the parent and child
         locations.  This coroutine must be called before using the
         device_locations_tree coroutine.

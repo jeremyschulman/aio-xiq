@@ -33,12 +33,23 @@ class XiqBaseClient(AsyncClient):
     Base client class for Extreme Cloud IQ API access.  The following
     environment variables can be used:
 
-       * XIQ_USER - login user name
+       * XIQ_USER - login user's name
        * XIQ_PASSWORD - login user password
        * XIQ_TOKEN - login token; no need for user/password
 
     If the Caller does not provide an API token, then the Caller must invoke
     the `login` coroutine to obtain an API token.
+
+    Attributes
+    ----------
+    xiq_user: str
+        The XIQ login username, provided or from Envionrment
+
+    xiq_password: str
+        The XIQ login password, provided or from Envionement
+
+    xiq_token: str
+        The XIQ API Token, provided or from Environment
     """
 
     DEFAULT_URL = "https://api.extremecloudiq.com"
@@ -53,6 +64,10 @@ class XiqBaseClient(AsyncClient):
         xiq_token: Optional[str] = None,
         **kwargs,
     ):
+        """
+        Initialize the API client with XIQ parameters and ony optional
+        httpx.AsyncClient parameters
+        """
         kwargs.setdefault("base_url", self.DEFAULT_URL)
         kwargs.setdefault("timeout", self.DEFAULT_TIMEOUT)
         super(XiqBaseClient, self).__init__(*vargs, **kwargs)
@@ -72,13 +87,19 @@ class XiqBaseClient(AsyncClient):
 
         Parameters
         ----------
-        username: str - login user name
-        password: str - login user passowrd
+        username: str - login user's name
+        password: str - login user's passowrd
 
         Raises
         ------
         HTTPException upon authentication error.
         """
+        if self.xiq_token:
+            return
+
+        if not (self.xiq_user and self.xiq_password):
+            raise RuntimeError("Missing XIQ user and password credentials")
+
         creds = {
             "username": username or self.xiq_user,
             "password": password or self.xiq_password,
@@ -106,13 +127,13 @@ class XiqBaseClient(AsyncClient):
         List of all API results from all pages
         """
 
-        # always make a copy of the Caller provided parameters so we
-        # do not trample any of their settings.
+        # always make a copy of the Caller provided parameters so that we do not
+        # trample any of their settings.
 
         _params = params.copy()
 
-        # fetch the first page of data, which will also tell us the the total
-        # number of pages we need to fetch.
+        # fetch the first page of data, which will also tell us the total number
+        # of pages we need to fetch.
 
         _params["limit"] = page_sz or self.DEFAULT_PAGE_SZ
         res = await self.get(url, params=_params)
@@ -143,8 +164,14 @@ class XiqBaseClient(AsyncClient):
     # -----------------------------------------------------------------------------
 
     async def request(self, *vargs, **kwargs) -> Response:
+        """
+        Overloads the httpx.AsyncClient request method so that  retries can be
+        attempted.
+        """
+
         @retry(wait=wait_exponential(multiplier=1, min=4, max=10))
         async def _do_rqst():
+            """wraps the request in a retry"""
             res = await super(XiqBaseClient, self).request(*vargs, **kwargs)
 
             if res.status_code == HTTPStatus.BAD_REQUEST and "UNKNOWN" in res.text:
