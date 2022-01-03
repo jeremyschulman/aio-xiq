@@ -1,1 +1,1 @@
-from .v2.client import XiqBaseClient as XiqClient
+from aioxiq.v2 import XiqClient

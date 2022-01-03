@@ -33,7 +33,7 @@ class XiqBaseClient(AsyncClient):
     Base client class for Extreme Cloud IQ API access.  The following
     environment variables can be used:
 
-       * XIQ_USER - login user name
+       * XIQ_USER - login user's name
        * XIQ_PASSWORD - login user password
        * XIQ_TOKEN - login token; no need for user/password
 
@@ -72,13 +72,19 @@ class XiqBaseClient(AsyncClient):
 
         Parameters
         ----------
-        username: str - login user name
-        password: str - login user passowrd
+        username: str - login user's name
+        password: str - login user's passowrd
 
         Raises
         ------
         HTTPException upon authentication error.
         """
+        if self.xiq_token:
+            return
+
+        if not (self.xiq_user and self.xiq_password):
+            raise RuntimeError("Missing XIQ user and password credentials")
+
         creds = {
             "username": username or self.xiq_user,
             "password": password or self.xiq_password,
@@ -106,13 +112,13 @@ class XiqBaseClient(AsyncClient):
         List of all API results from all pages
         """
 
-        # always make a copy of the Caller provided parameters so we
-        # do not trample any of their settings.
+        # always make a copy of the Caller provided parameters so that we do not
+        # trample any of their settings.
 
         _params = params.copy()
 
-        # fetch the first page of data, which will also tell us the the total
-        # number of pages we need to fetch.
+        # fetch the first page of data, which will also tell us the total number
+        # of pages we need to fetch.
 
         _params["limit"] = page_sz or self.DEFAULT_PAGE_SZ
         res = await self.get(url, params=_params)

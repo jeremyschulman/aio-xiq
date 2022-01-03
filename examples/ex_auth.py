@@ -1,7 +1,7 @@
-from aioxiq.v2 import XiqBaseClient, XiqAuth
+from aioxiq.v2 import XiqAuth
 
 
-class Client(XiqAuth, XiqBaseClient):
+class Client(XiqAuth):
     pass
 
 
