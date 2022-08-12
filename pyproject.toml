@@ -23,8 +23,8 @@ repository = "https://github.com/jeremyschulman/aio-xiq"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-httpx = "^0.18.1"
-tenacity = "^7.0.0"
+httpx = "*"
+tenacity = "*"
 
 [tool.poetry.dev-dependencies]
 invoke = "^1.5.0"
